@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+.vscode/*
+venv-kmeans/*
+__pycache__/*
