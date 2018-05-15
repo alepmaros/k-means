@@ -6,7 +6,24 @@ import matplotlib.cm as cm
 
 class KMeans():
     def __init__(self, K, X=None, N=0):
+        """
+        KMeans initialization.
+
+        Parameters
+        ----------
+        K : int
+        Number of Clusters
+        X : array
+        The dataset; an array of points
+        N : int
+        Number of points to generate if no dataset is
+        provided 
+        """
         self.K = K
+        self.mu = None
+        self.clusters = None
+        self.method = None
+
         if X == None:
             if N == 0:
                 raise Exception("If no data is provided, \
@@ -17,11 +34,18 @@ class KMeans():
         else:
             self.X = X
             self.N = len(X)
-        self.mu = None
-        self.clusters = None
-        self.method = None
- 
+        
     def _init_board_gauss(self, N, k):
+        """
+        Initialize the board using a Gauss Distribution
+
+        Parameters
+        ----------
+        N : int
+        Number of points to generate
+        k : int
+        Number of clusters
+        """
         n = float(N)/k
         X = []
         for i in range(k):
@@ -38,6 +62,7 @@ class KMeans():
         return X
  
     def plot_board(self):
+        """Plots the current state of the board"""
         X = self.X
         fig = plt.figure(figsize=(5,5))
         plt.xlim(-1,1)
@@ -64,11 +89,19 @@ class KMeans():
                     bbox_inches='tight', dpi=200)
  
     def _cluster_points(self):
+        """
+        Finds the best cluster for each point in the dataset, based on the
+        minimum distance between the point and the cluster.
+        """
         mu = self.mu
         clusters  = {}
         for x in self.X:
-            bestmukey = min([(i[0], np.linalg.norm(x-mu[i[0]])) \
-                             for i in enumerate(mu)], key=lambda t:t[1])[0]
+            # Calculates the distances from point x to all other clusters and gets 
+            # the key that belong to the cluster that has the minimum distance
+            bestmukey = min([(index, np.linalg.norm(x-c_i)) \
+                             for index, c_i in enumerate(mu)], key=lambda t:t[1])[0]
+
+            # If there is the key, append it, otherwise, create the new key
             try:
                 clusters[bestmukey].append(x)
             except KeyError:
@@ -76,25 +109,37 @@ class KMeans():
         self.clusters = clusters
  
     def _reevaluate_centers(self):
+        """Recalculate the position of the new centers"""
         clusters = self.clusters
         newmu = []
-        keys = sorted(self.clusters.keys())
-        for k in keys:
+        for k in clusters.keys():
             newmu.append(np.mean(clusters[k], axis = 0))
         self.mu = newmu
  
     def _has_converged(self):
+        """
+        Checks if the centers converged, i.e, it reached stability and did
+        not change since last iteration
+        """
         K = len(self.oldmu)
         return(set([tuple(a) for a in self.mu]) == \
                set([tuple(a) for a in self.oldmu])\
                and len(set([tuple(a) for a in self.mu])) == K)
  
     def find_centers(self, method='random'):
+        """
+        Main function to call to find the centers of the clusters.
+
+        Arguments
+        ---------
+        method : str
+          The method to be used to intialize the centers
+        """
         self.method = method
         X = self.X
         K = self.K
         self.oldmu = random.sample(list(X), K)
-        if method != '++':
+        if (method == 'random'):
             # Initialize to K random centers
             self.mu = random.sample(list(X), K)
         while not self._has_converged():

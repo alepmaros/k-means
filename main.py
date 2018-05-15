@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import time
 
 from kmeanspp import KPlusPlus
 
@@ -16,11 +17,15 @@ if __name__ == '__main__':
     #plt.scatter(clusters[:,0], clusters[:,1], c="red")
     #plt.show()
 
-    kplusplus = KPlusPlus(5, N=2000)
+    kplusplus = KPlusPlus(20, N=100000)
     
     # Random initialization
-    kplusplus.find_centers()
-    kplusplus.plot_board()
+    #kplusplus.find_centers()
+    #kplusplus.plot_board()
     # k-means++ initialization
+    kplusplus.init_centers()
+    start_time = time.clock()
     kplusplus.find_centers(method='++')
+    end_time = time.clock()
+    print("K-Means++ took {} seconds".format(start_time-end_time))
     kplusplus.plot_board()
