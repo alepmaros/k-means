@@ -2,30 +2,37 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
+import argparse
+import os
 
-from kmeanspp import KPlusPlus
+from kmeanspp import KPlusPlus, KMeans
 
 if __name__ == '__main__':
-    s2 = pd.read_csv("datasets/s2.txt", sep=",", header=None)
-    s2 = s2.drop(0, 1)
-    true_centroids_s2 = pd.read_csv("datasets/s2-cb.txt", sep=" ", header=None)
-    print(true_centroids_s2)
+    # Argument Parser
+    parser = argparse.ArgumentParser(description='Description.')
+    parser.add_argument('--dataset', dest='datasets', required=True, nargs='+',
+        help='The path for the dataset')
+    args = parser.parse_args()
 
-    #clusters = kmeans(s2.values, len(true_centroids_s2), true_centroids_s2.values)
+    for path_dataset in args.datasets:
+        synthetic1 = pd.read_csv(path_dataset, sep=",", header=None)
+        _, dataset_name = os.path.split(path_dataset)
+        # Remove the .txt
+        dataset_name    = dataset_name[:-4]
 
-    #plt.scatter(s2.values[:,0], s2.values[:,1], c="blue")
-    #plt.scatter(clusters[:,0], clusters[:,1], c="red")
-    #plt.show()
+        print(len(synthetic1))
+        
+        # Random initialization
+        kmeans = KMeans(5, X=synthetic1.values, name=dataset_name)
+        kmeans.find_centers()
+        kmeans.plot_board()
 
-    kplusplus = KPlusPlus(20, N=100000)
-    
-    # Random initialization
-    #kplusplus.find_centers()
-    #kplusplus.plot_board()
-    # k-means++ initialization
-    kplusplus.init_centers()
-    start_time = time.clock()
-    kplusplus.find_centers(method='++')
-    end_time = time.clock()
-    print("K-Means++ took {} seconds".format(start_time-end_time))
-    kplusplus.plot_board()
+        # k-means++ initialization
+        kpp = KPlusPlus(5, X=synthetic1.values, name=dataset_name)
+        kpp.init_centers()
+        start_time = time.clock()
+        kpp.find_centers(method='++')
+        end_time = time.clock()
+        print(kpp.get_mean_distance())
+        print("K-Means++ took {} seconds".format(end_time-start_time))
+        kpp.plot_board()

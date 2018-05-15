@@ -3,68 +3,47 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import random
 import matplotlib.cm as cm
+import os
+
+from utils.dataset import init_2d_board_gauss
 
 class KMeans():
-    def __init__(self, K, X=None, N=0):
+    def __init__(self, K, X=None, N=0, name=""):
         """
         KMeans initialization.
 
         Parameters
         ----------
         K : int
-        Number of Clusters
+          Number of Clusters
         X : array
-        The dataset; an array of points
+          The dataset; an array of points
         N : int
-        Number of points to generate if no dataset is
-        provided 
+          Number of points to generate if no dataset is
+          provided 
         """
         self.K = K
         self.mu = None
         self.clusters = None
         self.method = None
+        self.name = name
 
-        if X == None:
+        if not X.any():
             if N == 0:
                 raise Exception("If no data is provided, \
                                  a parameter N (number of points) is needed")
             else:
                 self.N = N
-                self.X = self._init_board_gauss(N, K)
+                self.X =init_2d_board_gauss(N, K)
         else:
             self.X = X
             self.N = len(X)
         
-    def _init_board_gauss(self, N, k):
-        """
-        Initialize the board using a Gauss Distribution
-
-        Parameters
-        ----------
-        N : int
-        Number of points to generate
-        k : int
-        Number of clusters
-        """
-        n = float(N)/k
-        X = []
-        for i in range(k):
-            c = (random.uniform(-1,1), random.uniform(-1,1))
-            s = random.uniform(0.05,0.15)
-            x = []
-            while len(x) < n:
-                a,b = np.array([np.random.normal(c[0],s),np.random.normal(c[1],s)])
-                # Continue drawing points from the distribution in the range [-1,1]
-                if abs(a) and abs(b)<1:
-                    x.append([a,b])
-            X.extend(x)
-        X = np.array(X)[:N]
-        return X
- 
     def plot_board(self):
         """Plots the current state of the board"""
         X = self.X
         fig = plt.figure(figsize=(5,5))
+        plt.style.use('ggplot')
         plt.xlim(-1,1)
         plt.ylim(-1,1)
         if self.mu and self.clusters:
@@ -73,20 +52,20 @@ class KMeans():
             K = self.K
             for m, clu in clus.items():
                 #cs = plt.spectral()
-                plt.plot(mu[m][0], mu[m][1], 'o', marker='*', \
-                         markersize=12)
-                plt.plot(list(zip(*clus[m]))[0], list(zip(*clus[m]))[1], '.', \
+                plt.plot(mu[m][0], mu[m][1], 'o', marker='x',
+                         markersize=12, color='w', zorder=10)
+                plt.plot(list(zip(*clus[m]))[0], list(zip(*clus[m]))[1], '.',
                          markersize=8, alpha=0.5)
         else:
             plt.plot(zip(*X)[0], zip(*X)[1], '.', alpha=0.5)
         if self.method == '++':
-            tit = 'K-means++'
+            tit = 'K-Means++'
         else:
-            tit = 'K-means with random initialization'
-        pars = 'N=%s, K=%s' % (str(self.N), str(self.K))
+            tit = 'K-Means com inicialização aleatoria'
+        pars = 'N={}, K={}'.format(str(self.N), str(self.K))
         plt.title('\n'.join([pars, tit]), fontsize=16)
-        plt.savefig('kpp_N%s_K%s.png' % (str(self.N), str(self.K)), \
-                    bbox_inches='tight', dpi=200)
+        name = '{}_{}_N{}_K{}.pdf'.format(self.name, self.method, self.N, self.K)
+        plt.savefig(os.path.join('experiments', name), bbox_inches='tight')
  
     def _cluster_points(self):
         """
@@ -112,7 +91,7 @@ class KMeans():
         """Recalculate the position of the new centers"""
         clusters = self.clusters
         newmu = []
-        for k in clusters.keys():
+        for k in sorted(clusters.keys()):
             newmu.append(np.mean(clusters[k], axis = 0))
         self.mu = newmu
  
@@ -148,6 +127,18 @@ class KMeans():
             self._cluster_points()
             # Reevaluate centers
             self._reevaluate_centers()
+    
+    def get_mean_distance(self):
+        """
+        Gets the mean distance from point X to its correspondent center for all centers
+
+        """
+        mu = self.mu
+        clusters = self.clusters
+        means = []
+        for index, centroid in enumerate(mu):
+            means.append(np.mean([np.linalg.norm(x - centroid) for x in clusters[index]]))
+        return np.mean(means)
 
 class KPlusPlus(KMeans):
     def _dist_from_centers(self):
@@ -172,59 +163,12 @@ class KPlusPlus(KMeans):
     def plot_init_centers(self):
         X = self.X
         fig = plt.figure(figsize=(5,5))
+        plt.style.use('ggplot')
         plt.xlim(-1,1)
         plt.ylim(-1,1)
         plt.plot(list(zip(*X))[0], list(zip(*X))[1], '.', alpha=0.5)
-        plt.plot(list(zip(*self.mu))[0], list(zip(*self.mu))[1], 'ro')
-        plt.savefig('kpp_init_N%s_K%s.png' % (str(self.N),str(self.K)), \
-                    bbox_inches='tight', dpi=200)
-
-def get_error(true_centroids, centroids):
-    error = 0
-
-    for i in range(0, len(centroids)):
-        error += np.linalg.norm(centroids[i] - true_centroids[i])
-    
-    return error
-
-def kmeans(points, k, true_centroids):
-    clusters = np.random.rand(k, len(points[0])) * np.amax(points)
-    cluster_index = [0] * len(points)
-    
-    for z in range(0, 10):
-        print(z)
-
-        # Find the cluster that each point is closest to
-        i = 0
-        for x in points:
-            
-            distance_min_position = 0
-            distance_min = np.linalg.norm(clusters[0] - x)
-
-            j = 0
-            for c in clusters:
-                distance = np.linalg.norm(c - x)
-                if (distance < distance_min):
-                    distance_min_position = j
-                    distance_min = distance
-
-                j += 1
-        
-            cluster_index[i] = distance_min_position
-            i += 1
-        
-        cluster_mean = np.zeros((k, len(points[0])))
-        quantity_points = np.zeros(k)
-        i = 0
-        for x in points:
-            cluster_mean[cluster_index[i]] += x
-            quantity_points[cluster_index[i]] += 1
-            i += 1
-        
-        for i in range(0, len(clusters)):
-            clusters[i] = np.divide(cluster_mean[i], quantity_points[i])
-            
-        print(get_error(true_centroids, clusters))
-
-    return clusters
+        plt.scatter(list(zip(*self.mu))[0], list(zip(*self.mu))[1], marker='x',
+                    s=169, linewidths=3, color='w', zorder=10)
+        plt.savefig('kpp_init_N%s_K%s.pdf' % (str(self.N),str(self.K)), \
+                    bbox_inches='tight')
 

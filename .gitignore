@@ -1,3 +1,7 @@
+# Tests
+*.pdf
+utils/__pycache__/*
+
 # Prerequisites
 *.d
 
