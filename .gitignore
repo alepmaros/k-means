@@ -38,3 +38,4 @@ utils/__pycache__/*
 .vscode/*
 venv-kmeans/*
 __pycache__/*
+algorithms/__pycache__/*

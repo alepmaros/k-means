@@ -23,7 +23,7 @@ class KMeans():
           provided 
         """
         self.K = K
-        self.mu = None
+        self.centroids = None
         self.clusters = None
         self.method = None
         self.name = name
@@ -42,7 +42,7 @@ class KMeans():
     def plot_board(self):
         """Plots the current state of the board"""
         X = self.X
-        mu = self.mu
+        centroids = self.centroids
         clus = self.clusters
         K = self.K
 
@@ -53,10 +53,10 @@ class KMeans():
         if (len(X[0]) == 2):
             plt.xlim(-1,1)
             plt.ylim(-1,1)
-            if self.mu and self.clusters:
+            if self.centroids and self.clusters:
                 for m, clu in clus.items():
                     #cs = plt.spectral()
-                    plt.plot(mu[m][0], mu[m][1], 'o', marker='x',
+                    plt.plot(centroids[m][0], centroids[m][1], 'o', marker='x',
                             markersize=12, color='w', zorder=10)
                     plt.plot(list(zip(*clus[m]))[0], list(zip(*clus[m]))[1], '.',
                             markersize=8, alpha=0.5)
@@ -66,9 +66,9 @@ class KMeans():
             ax.set_xlim(-1,1)
             ax.set_ylim(-1,1)
             ax.set_zlim(-1,1)
-            if self.mu and self.clusters:
+            if self.centroids and self.clusters:
                 for m, clu in clus.items():
-                    ax.plot((mu[m][0],), (mu[m][1],), (mu[m][2],), 'o', marker='x',
+                    ax.plot((centroids[m][0],), (centroids[m][1],), (centroids[m][2],), 'o', marker='x',
                             markersize=12, color='w', zorder=10)
                     ax.plot(list(zip(*clus[m]))[0], list(zip(*clus[m]))[1],
                             list(zip(*clus[m]))[2], '.',
@@ -91,38 +91,38 @@ class KMeans():
         Finds the best cluster for each point in the dataset, based on the
         minimum distance between the point and the cluster.
         """
-        mu = self.mu
+        centroids = self.centroids
         clusters  = {}
         for x in self.X:
             # Calculates the distances from point x to all other clusters and gets 
             # the key that belong to the cluster that has the minimum distance
-            bestmukey = min([(index, np.linalg.norm(x-c_i)) \
-                             for index, c_i in enumerate(mu)], key=lambda t:t[1])[0]
+            best_centroid_key = min([(index, np.linalg.norm(x-c_i)) \
+                                    for index, c_i in enumerate(centroids)], key=lambda t:t[1])[0]
 
             # If there is the key, append it, otherwise, create the new key
             try:
-                clusters[bestmukey].append(x)
+                clusters[best_centroid_key].append(x)
             except KeyError:
-                clusters[bestmukey] = [x]
+                clusters[best_centroid_key] = [x]
         self.clusters = clusters
  
     def _reevaluate_centers(self):
         """Recalculate the position of the new centers"""
         clusters = self.clusters
-        newmu = []
+        new_centroid = []
         for k in sorted(clusters.keys()):
-            newmu.append(np.mean(clusters[k], axis = 0))
-        self.mu = newmu
+            new_centroid.append(np.mean(clusters[k], axis = 0))
+        self.centroids = new_centroid
  
     def _has_converged(self):
         """
         Checks if the centers converged, i.e, it reached stability and did
         not change since last iteration
         """
-        K = len(self.oldmu)
-        return(set([tuple(a) for a in self.mu]) == \
-               set([tuple(a) for a in self.oldmu])\
-               and len(set([tuple(a) for a in self.mu])) == K)
+        K = len(self.old_centroids)
+        return(set([tuple(a) for a in self.centroids]) == \
+               set([tuple(a) for a in self.old_centroids])\
+               and len(set([tuple(a) for a in self.centroids])) == K)
  
     def find_centers(self, method='random'):
         """
@@ -136,12 +136,12 @@ class KMeans():
         self.method = method
         X = self.X
         K = self.K
-        self.oldmu = random.sample(list(X), K)
+        self.old_centroids = random.sample(list(X), K)
         if (method == 'random'):
             # Initialize to K random centers
-            self.mu = random.sample(list(X), K)
+            self.centroids = random.sample(list(X), K)
         while not self._has_converged():
-            self.oldmu = self.mu
+            self.old_centroids = self.centroids
             # Assign all points in X to clusters
             self._cluster_points()
             # Reevaluate centers
@@ -152,10 +152,10 @@ class KMeans():
         Gets the mean distance from point X to its correspondent center for all centers
 
         """
-        mu = self.mu
+        centroids = self.centroids
         clusters = self.clusters
         means = []
-        for index, centroid in enumerate(mu):
+        for index, centroid in enumerate(centroids):
             means.append(np.mean([np.linalg.norm(x - centroid) for x in clusters[index]]))
         return np.mean(means)
 

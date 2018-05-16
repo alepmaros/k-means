@@ -5,8 +5,8 @@ import time
 import argparse
 import os
 
-from kmeans import KMeans
-from kmeanspp import KPlusPlus
+from algorithms.kmeans import KMeans
+from algorithms.kmeanspp import KPlusPlus
 
 if __name__ == '__main__':
     # Argument Parser
