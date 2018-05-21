@@ -39,6 +39,7 @@ if __name__ == '__main__':
         X_test = test.drop("label", axis=1)
 
         # Random initialization
+        print("K-Means")
         kmeans = KMeans(args.k, X=X_train.values, Y=y_train.values, name=dataset_name)
 
         start_time = time.clock()
@@ -50,6 +51,7 @@ if __name__ == '__main__':
         kmeans.plot_board()
 
         # k-means++ initialization
+        print("K-Means++")
         kpp = KPlusPlus(args.k, X=X_train.values, Y=y_train.values, name=dataset_name)
         kpp.init_centers()
 
