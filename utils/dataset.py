@@ -10,7 +10,7 @@ def plot_2d_board(X, N, k, fname):
     plt.style.use('ggplot')
     plt.xlim(-1,1)
     plt.ylim(-1,1)
-    plt.plot(list(zip(*X))[0], list(zip(*X))[1], '.')
+    plt.plot(list(zip(*X))[1], list(zip(*X))[2], '.')
     plt.title('Dados não agrupados\n{} Pontos'.format(N))
     plt.savefig(fname+'.pdf', bbox_inches='tight')
 
@@ -21,7 +21,7 @@ def plot_3d_board(X, N, k, fname):
     ax.set_xlim(-1,1)
     ax.set_ylim(-1,1)
     ax.set_zlim(-1,1)
-    ax.scatter(list(zip(*X))[0], list(zip(*X))[1], list(zip(*X))[2], '.')
+    ax.scatter(list(zip(*X))[1], list(zip(*X))[2], list(zip(*X))[3], '.')
     plt.title('Dados não agrupados\n{} Pontos'.format(N))
     plt.savefig(fname+'.pdf', bbox_inches='tight')
 
@@ -46,6 +46,7 @@ def init_board_gauss(N, k, dimension):
                 point = np.array([np.random.normal(c_i,s) for c_i in c])
                 # Continue drawing points from the distribution in the range [-1,1]
                 if (all(abs(coordinate) < 1 for coordinate in point)):
+                    point = np.insert(point, 0, i)
                     x.append(point)
             X.extend(x)
         X = np.array(X)[:N]

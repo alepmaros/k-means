@@ -5,10 +5,9 @@ import random
 import matplotlib.cm as cm
 import os
 
-from utils.dataset import init_board_gauss
 
 class KMeans():
-    def __init__(self, K, X=None, N=0, name=""):
+    def __init__(self, K, X, Y, N=0, name=""):
         """
         KMeans initialization.
 
@@ -25,19 +24,16 @@ class KMeans():
         self.K = K
         self.centroids = None
         self.clusters = None
+        self.clusters_labels = None
         self.method = None
         self.name = name
 
-        if not X.any():
-            if N == 0:
-                raise Exception("If no data is provided, \
-                                 a parameter N (number of points) is needed")
-            else:
-                self.N = N
-                self.X =init_board_gauss(N, K, 2)
-        else:
-            self.X = X
-            self.N = len(X)
+        self.X = X
+        self.N = len(X)
+        self.true_y = Y
+
+        if (len(self.true_y) != self.N):
+            print("Length of Y and X are different!")
         
     def plot_board(self):
         """Plots the current state of the board"""
@@ -93,7 +89,8 @@ class KMeans():
         """
         centroids = self.centroids
         clusters  = {}
-        for x in self.X:
+        clusters_labels = {}
+        for x,y in zip(self.X, self.true_y):
             # Calculates the distances from point x to all other clusters and gets 
             # the key that belong to the cluster that has the minimum distance
             best_centroid_key = min([(index, np.linalg.norm(x-c_i)) \
@@ -104,8 +101,15 @@ class KMeans():
                 clusters[best_centroid_key].append(x)
             except KeyError:
                 clusters[best_centroid_key] = [x]
+
+            try:
+                clusters_labels[best_centroid_key].append(y)
+            except KeyError:
+                clusters_labels[best_centroid_key] = [y]
+
         self.clusters = clusters
- 
+        self.clusters_labels = clusters_labels
+
     def _reevaluate_centers(self):
         """Recalculate the position of the new centers"""
         clusters = self.clusters
@@ -146,7 +150,28 @@ class KMeans():
             self._cluster_points()
             # Reevaluate centers
             self._reevaluate_centers()
-    
+
+    def predict_y(self, x):
+        centroids = self.centroids
+        clusters_labels = self.clusters_labels
+
+        # Find the centroid that x is from
+        best_centroid_key = min([(index, np.linalg.norm(x-c_i))
+            for index, c_i in enumerate(centroids)], key=lambda t:t[1])[0]
+
+        # Find the most commom label for that cluster
+        most_commom_label = max(set(clusters_labels[best_centroid_key]),
+                                key=clusters_labels[best_centroid_key].count)
+
+        return most_commom_label
+
+    def get_error_count(self, X, true_y):
+        correct_y = 0
+        for x,y in zip(X, true_y):
+            if (self.predict_y(x) == y):
+                correct_y += 1
+        return correct_y / len(X)
+
     def get_mean_distance(self):
         """
         Gets the mean distance from point X to its correspondent center for all centers
