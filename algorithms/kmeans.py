@@ -80,7 +80,8 @@ class KMeans():
         pars = 'N={}, K={}'.format(str(self.N), str(self.K))
         plt.title('\n'.join([pars, tit]), fontsize=16)
         name = '{}_{}_N{}_K{}.pdf'.format(self.name, self.method, self.N, self.K)
-        plt.savefig(os.path.join('experiments', name), bbox_inches='tight')
+        plt.show()
+        #plt.savefig(os.path.join('experiments', name), bbox_inches='tight')
  
     def _cluster_points(self):
         """
@@ -172,15 +173,14 @@ class KMeans():
                 correct_y += 1
         return correct_y / len(X)
 
-    def get_mean_distance(self):
+    def get_sum_distances(self):
         """
         Gets the mean distance from point X to its correspondent center for all centers
-
         """
         centroids = self.centroids
         clusters = self.clusters
         means = []
         for index, centroid in enumerate(centroids):
-            means.append(np.mean([np.linalg.norm(x - centroid) for x in clusters[index]]))
-        return np.mean(means)
+            means.append(np.sum([np.linalg.norm(x - centroid) for x in clusters[index]]))
+        return np.sum(means)
 
