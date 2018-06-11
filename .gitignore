@@ -1,6 +1,7 @@
 # Tests
 *.pdf
 utils/__pycache__/*
+datasets/kdd_original10.data
 
 # Prerequisites
 *.d

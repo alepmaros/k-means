@@ -46,8 +46,10 @@ if __name__ == '__main__':
         # Remove the .txt
         dataset_name    = dataset_name[:-4]
 
-        train = fdataset.sample(frac=0.8)
+        train = fdataset.sample(frac=0.2)
         test  = fdataset.drop(train.index)
+
+        print(train.shape)
 
         for i in range(0, iterations):
             print('Iteration {}'.format(i+1))
@@ -65,18 +67,20 @@ if __name__ == '__main__':
             X_test = test.drop("label", axis=1)
 
             ### Random initialization
+            print('\tK-Means Random Initialization')
             kmeans = KMeans(args.k, X=X_train.values, Y=y_train.values, name=dataset_name)
 
             start_time = time.clock()
             kmeans.find_centers()
             end_time = time.clock()
             
-            accuracy['kmeans'].append(kmeans.get_error_count(X_test.values, y_test.values))
+            #accuracy['kmeans'].append(kmeans.get_error_count(X_test.values, y_test.values))
             phi['kmeans'].append(kmeans.get_sum_distances())
             fit_time['kmeans'].append(end_time-start_time)
             #kmeans.plot_board()
 
             ### K-means++ initialization
+            print('\tK-Means++')
             kpp = KPlusPlus(args.k, X=X_train.values, Y=y_train.values, name=dataset_name)
             kpp.init_centers()
 
@@ -84,7 +88,7 @@ if __name__ == '__main__':
             kpp.find_centers(method='++')
             end_time = time.clock()
 
-            accuracy['kmeanspp'].append(kpp.get_error_count(X_test.values, y_test.values))
+            #accuracy['kmeanspp'].append(kpp.get_error_count(X_test.values, y_test.values))
             phi['kmeanspp'].append(kpp.get_sum_distances())
             fit_time['kmeanspp'].append(end_time-start_time)
             #kpp.plot_board()
