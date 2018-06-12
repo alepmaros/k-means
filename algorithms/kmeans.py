@@ -7,7 +7,7 @@ import os
 
 
 class KMeans():
-    def __init__(self, K, X, Y, N=0, name=""):
+    def __init__(self, K, X, Y=None, N=0, name=""):
         """
         KMeans initialization.
 
