@@ -31,9 +31,6 @@ class KMeans():
         self.X = X
         self.N = len(X)
         self.true_y = Y
-
-        if (len(self.true_y) != self.N):
-            print("Length of Y and X are different!")
         
     def plot_board(self):
         """Plots the current state of the board"""
