@@ -27,9 +27,9 @@ if __name__ == '__main__':
     print('Running for {} iterations'.format(iterations))
 
     method = {
-        'K-Means'  : {'phi': [], fit_time: []},
-        'K-Means++': {'phi': [], fit_time: []},
-        'GK-Means' : {'phi': [], fit_time: []}
+        'K-Means'  : {'phi': [], 'fit_time': []},
+        'K-Means++': {'phi': [], 'fit_time': []},
+        'GK-Means' : {'phi': [], 'fit_time': []}
     }
 
     for path_dataset in args.datasets:
@@ -97,7 +97,34 @@ if __name__ == '__main__':
             #accuracy['kmeans'].append(kmeans.get_error_count(X_test.values, y_test.values))
             method['GK-Means']['phi'].append(kmeansgraph.get_sum_distances())
             method['GK-Means']['fit_time'].append(end_time-start_time)
-            
         
-        for key, value in method:
-            
+        print('K-Means')
+        print('phi: {} +- {}'.format(np.mean(method['K-Means']['phi']), np.std(method['K-Means']['phi'])))
+        print('fit_time: {} +- {}'.format(np.mean(method['K-Means']['fit_time']), np.std(method['K-Means']['fit_time'])))
+
+        print('K-Means++')
+        print('phi: {} +- {}'.format(np.mean(method['K-Means++']['phi']), np.std(method['K-Means++']['phi'])))
+        print('fit_time: {} +- {}'.format(np.mean(method['K-Means++']['fit_time']), np.std(method['K-Means++']['fit_time'])))
+
+        print('GK-Means')
+        print('phi: {} +- {}'.format(np.mean(method['GK-Means']['phi']), np.std(method['GK-Means']['phi'])))
+        print('fit_time: {} +- {}'.format(np.mean(method['GK-Means']['fit_time']), np.std(method['GK-Means']['fit_time'])))
+
+
+        #for key, value in method:
+        plt.close('all')
+        plt.style.use('ggplot')
+        
+        f = plt.figure()
+        ax_labels = list(method)
+        plt.boxplot( [ method[x]['phi'] for x in ax_labels ] )
+        plt.xticks(np.arange(len(ax_labels))+1, ax_labels, rotation= 45)
+        plt.title('Phi\n{} - K = {}'.format(dataset_name, args.k))
+        plt.show()
+
+        f = plt.figure()
+        ax_labels = list(method)
+        plt.boxplot( [ method[x]['fit_time'] for x in ax_labels ] )
+        plt.xticks(np.arange(len(ax_labels))+1, ax_labels, rotation= 45)
+        plt.title('Tempo de execução (segundos)\n{} - K = {}'.format(dataset_name, args.k))
+        plt.show()
