@@ -26,22 +26,10 @@ if __name__ == '__main__':
 
     print('Running for {} iterations'.format(iterations))
 
-    accuracy = {
-        'kmeans': [],
-        'kmeanspp': [],
-        'K-Means Graph': []
-    }
-
-    phi = {
-        'kmeans': [],
-        'kmeanspp': [],
-        'K-Means Graph': []
-    }
-
-    fit_time = {
-        'kmeans': [],
-        'kmeanspp': [],
-        'K-Means Graph': []
+    method = {
+        'K-Means'  : {'phi': [], fit_time: []},
+        'K-Means++': {'phi': [], fit_time: []},
+        'GK-Means' : {'phi': [], fit_time: []}
     }
 
     for path_dataset in args.datasets:
@@ -50,8 +38,10 @@ if __name__ == '__main__':
         # Remove the .txt
         dataset_name    = dataset_name[:-4]
 
-        train = fdataset.sample(frac=0.01)
-        #train = fdataset
+        if(dataset_name == 'kdd99.'):
+            train = fdataset.sample(frac=0.1)
+        else:
+            train = fdataset
         
         #test  = fdataset.drop(train.index)
 
@@ -68,20 +58,20 @@ if __name__ == '__main__':
 
             ### Random initialization
             print('\tK-Means Random Initialization')
-            kmeans = KMeans(args.k, X=X_train.values, name=dataset_name)
+            kmeans = KMeans(args.k, X=X_train.values, Y=y_train.values, name=dataset_name)
 
             start_time = time.clock()
             kmeans.find_centers()
             end_time = time.clock()
             
             #accuracy['kmeans'].append(kmeans.get_error_count(X_test.values, y_test.values))
-            phi['kmeans'].append(kmeans.get_sum_distances())
-            fit_time['kmeans'].append(end_time-start_time)
+            method['K-Means']['phi'].append(kmeans.get_sum_distances())
+            method['K-Means']['fit_time'].append(end_time-start_time)
             #kmeans.plot_board()
 
             ### K-means++ initialization
             print('\tK-Means++')
-            kpp = KPlusPlus(args.k, X=X_train.values, name=dataset_name)
+            kpp = KPlusPlus(args.k, X=X_train.values, Y=y_train.values, name=dataset_name)
             kpp.init_centers()
 
             start_time = time.clock()
@@ -89,42 +79,25 @@ if __name__ == '__main__':
             end_time = time.clock()
 
             #accuracy['kmeanspp'].append(kpp.get_error_count(X_test.values, y_test.values))
-            phi['kmeanspp'].append(kpp.get_sum_distances())
-            fit_time['kmeanspp'].append(end_time-start_time)
+            method['K-Means++']['phi'].append(kpp.get_sum_distances())
+            method['K-Means++']['fit_time'].append(end_time-start_time)
             #kpp.plot_board()
 
             ### K-Means Graph
             print('\tK-Means Graph')
-            start=time.time()
-            kmeansgraph = KMeansGraph(args.k, X=X_train, name=dataset_name)
-            print("Took {} seconds".format(time.time()-start))
-            start=time.time()
+            kmeansgraph = KMeansGraph(args.k, X=X_train, Y=y_train, name=dataset_name)
             kmeansgraph.init_centers()
-            print("Took {} seconds".format(time.time()-start))
+            #kmeansgraph.plot_init_centers()
 
             start_time = time.clock()
-            kmeansgraph.find_centers()
+            kmeansgraph.find_centers(method='graph')
             end_time = time.clock()
-            
+            #kmeansgraph.plot_board()
+
             #accuracy['kmeans'].append(kmeans.get_error_count(X_test.values, y_test.values))
-            phi['K-Means Graph'].append(kmeansgraph.get_sum_distances())
-            fit_time['K-Means Graph'].append(end_time-start_time)
-            #kmeans.plot_board()
+            method['GK-Means']['phi'].append(kmeansgraph.get_sum_distances())
+            method['GK-Means']['fit_time'].append(end_time-start_time)
+            
         
-        print('\nStats:')
-        print('K-Means')
-        print('Acc: {:.3f} +- {:.3f}'.format(np.mean(accuracy['kmeans']), np.std(accuracy['kmeans'])))
-        print('Phi: {:.3f} +- {:.3f}'.format(np.mean(phi['kmeans']), np.std(phi['kmeans'])))
-        print('Tim: {:.3f} +- {:.3f}'.format(np.mean(fit_time['kmeans']), np.std(fit_time['kmeans'])))
-
-        print()
-        print('K-Means++')
-        print('Acc: {:.3f} +- {:.3f}'.format(np.mean(accuracy['kmeanspp']), np.std(accuracy['kmeanspp'])))
-        print('Phi: {:.3f} +- {:.3f}'.format(np.mean(phi['kmeanspp']), np.std(phi['kmeanspp'])))
-        print('Tim: {:.3f} +- {:.3f}'.format(np.mean(fit_time['kmeanspp']), np.std(fit_time['kmeanspp'])))
-
-        print()
-        print('K-Means graph')
-        print('Acc: {:.3f} +- {:.3f}'.format(np.mean(accuracy['K-Means Graph']), np.std(accuracy['K-Means Graph'])))
-        print('Phi: {:.3f} +- {:.3f}'.format(np.mean(phi['K-Means Graph']), np.std(phi['K-Means Graph'])))
-        print('Tim: {:.3f} +- {:.3f}'.format(np.mean(fit_time['K-Means Graph']), np.std(fit_time['K-Means Graph'])))
+        for key, value in method:
+            

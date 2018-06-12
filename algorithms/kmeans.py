@@ -31,6 +31,9 @@ class KMeans():
         self.X = X
         self.N = len(X)
         self.true_y = Y
+
+        if (len(self.true_y) != self.N):
+            print("Length of Y and X are different!")
         
     def plot_board(self):
         """Plots the current state of the board"""
@@ -72,6 +75,8 @@ class KMeans():
         
         if self.method == '++':
             tit = 'K-Means++'
+        elif self.method == 'graph':
+            tit = 'K-Means com incialização por MST'
         else:
             tit = 'K-Means com inicialização aleatoria'
         pars = 'N={}, K={}'.format(str(self.N), str(self.K))

@@ -32,10 +32,10 @@ class KMeansGraph(KMeans):
         self.method = None
         self.name = name
 
-        print(X.shape, X.drop_duplicates().shape)
-
         self.X = X.values
-        self.X_no_duplicates = X.drop_duplicates().values
+        self.X_no_duplicates = X.drop_duplicates().sample(frac=0.2).values
+
+        print(len(self.X_no_duplicates))
 
         self.N = len(X)
         self.true_y = Y
@@ -49,13 +49,7 @@ class KMeansGraph(KMeans):
     def _build_graph(self):
         adj_matrix = [ [-1 for _ in range(0,len(self.X_no_duplicates))] for _ in range(0,len(self.X_no_duplicates)) ]
         for i, x in enumerate(self.X_no_duplicates):
-            if (i % 100 == 0):
-                print(i)
             for j in range(i+1, len(self.X_no_duplicates)):
-                if ( np.linalg.norm(x - self.X_no_duplicates[j]) == 0):
-                    print(i,j,0,x,self.X_no_duplicates[j])
-                    print()
-                    print()
                 adj_matrix[i][j] = np.linalg.norm(x - self.X_no_duplicates[j])
 
         self.adj_matrix_graph = adj_matrix
@@ -80,8 +74,6 @@ class KMeansGraph(KMeans):
         parent[0] = -1
 
         for count in range(0, len(self.X_no_duplicates)-1):
-            if (count % 100 == 0):
-                print(count)
             u = self._extract_min(key, mstSet)
             mstSet[u] = True
             
@@ -106,7 +98,6 @@ class KMeansGraph(KMeans):
         # Build Prim MST
         prim_mst = self._prim()
         self.prim_mst = prim_mst
-        print(prim_mst)
         all_edges = []
         for i in prim_mst:
             for j in prim_mst[i]:
@@ -129,19 +120,18 @@ class KMeansGraph(KMeans):
         """
         Initialize the centers based on MST kmeans++
         """
-        visited = [False] * len(self.X)
+        visited = [False] * len(self.X_no_duplicates)
         for i in range(0, self.K):
             positions = []
             stack = [ self._find_first_vertex_not_visited(visited) ]
             while stack:
                 v = stack.pop()
                 if (visited[v] == False):
-                    positions.append(self.X[v])
+                    positions.append(self.X_no_duplicates[v])
                     visited[v] = True
                     for u in self.prim_mst[v]:
                         stack.append(u[0])
-            self.centroids.append( np.mean(positions) )
-        print(self.centroids)
+            self.centroids.append( np.mean(positions, axis=0) )
         return
  
     def plot_init_centers(self):
@@ -152,7 +142,7 @@ class KMeansGraph(KMeans):
             print("ERROR: Was init_centers called first?")
             return
             
-        X = self.X
+        X = self.X_no_duplicates
         fig = plt.figure(figsize=(5,5))
         plt.style.use('ggplot')
         plt.xlim(-1,1)
@@ -160,5 +150,5 @@ class KMeansGraph(KMeans):
         plt.plot(list(zip(*X))[0], list(zip(*X))[1], '.', alpha=0.5)
         plt.scatter(list(zip(*self.centroids))[0], list(zip(*self.centroids))[1], marker='x',
                     s=169, linewidths=3, color='w', zorder=10)
-        plt.savefig('kpp_init_N%s_K%s.pdf' % (str(self.N),str(self.K)), \
+        plt.savefig('kgraph_init_N%s_K%s.pdf' % (str(self.N),str(self.K)), \
                     bbox_inches='tight')
