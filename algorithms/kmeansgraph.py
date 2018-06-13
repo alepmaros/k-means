@@ -73,7 +73,7 @@ class KMeansGraph(KMeans):
         key[0] = 0
         parent[0] = -1
 
-        for count in range(0, len(self.X_no_duplicates)-1):
+        for _ in range(0, len(self.X_no_duplicates)-1):
             u = self._extract_min(key, mstSet)
             mstSet[u] = True
             

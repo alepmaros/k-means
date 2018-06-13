@@ -8,8 +8,8 @@ import os
 def plot_2d_board(X, N, k, fname):
     fig = plt.figure(figsize=(5,5))
     plt.style.use('ggplot')
-    plt.xlim(-1,1)
-    plt.ylim(-1,1)
+    plt.xlim(-250,250)
+    plt.ylim(-250,250)
     plt.plot(list(zip(*X))[1], list(zip(*X))[2], '.')
     plt.title('Dados não agrupados\n{} Pontos'.format(N))
     plt.savefig(fname+'.pdf', bbox_inches='tight')
@@ -39,13 +39,13 @@ def init_board_gauss(N, k, dimension):
         n = float(N)/k
         X = []
         for i in range(k):
-            c = [random.uniform(-1,1) for x in range(0, dimension)]
-            s = random.uniform(0.05,0.25)
+            c = [random.uniform(-250,250) for x in range(0, dimension)]
+            s = random.uniform(10,50)
             x = []
             while len(x) < n:
                 point = np.array([np.random.normal(c_i,s) for c_i in c])
                 # Continue drawing points from the distribution in the range [-1,1]
-                if (all(abs(coordinate) < 1 for coordinate in point)):
+                if (all(abs(coordinate) <= 250 for coordinate in point)):
                     point = np.insert(point, 0, i)
                     x.append(point)
             X.extend(x)
