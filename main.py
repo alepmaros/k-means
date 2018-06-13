@@ -135,7 +135,7 @@ if __name__ == '__main__':
     }
 
     x = []
-    for nb_points in range(5000,8000,1000):
+    for nb_points in range(5000,7000,1000):
         x.append(nb_points)
         print(nb_points)
         X = dataset.sample(n=nb_points)
@@ -174,8 +174,8 @@ if __name__ == '__main__':
     plt.style.use('ggplot')
     f = plt.figure()
     print(fit_times)
-    y = [ np.mean(points) for _,points in fit_times['K-Means'] ]
-    error = [ np.std(points) for _,points in fit_times['K-Means'] ]
+    y = [ np.mean( fit_times['K-Menas'][points] ) for points in fit_times['K-Means'] ]
+    error = [ np.std( fit_times['K-Menas'][points] ) for points in fit_times['K-Means'] ]
     plt.errorbar(x,y, yerr=error, fmt='ro-'  )
     #plt.xticks(np.arange(len(ax_labels))+1, ax_labels, rotation= 45)
     plt.title('error bar')
