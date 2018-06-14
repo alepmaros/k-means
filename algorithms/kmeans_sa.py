@@ -32,43 +32,40 @@ class KMeans_SA(KMeans):
             self.name = name
             
             self.X = X.values
-            self.X_no_duplicates = X.drop_duplicates()
+            self.X_no_duplicates = X.drop_duplicates().sample(frac=0.1)
             self.N = len(X.values)
             self.true_y = Y
 
 
     def _energy(self, candidate):
-        # cand_centroids = candidate
-        # clusters  = {}
-        # for x in self.X_no_duplicates.values:
-        #     # Calculates the distances from point x to all other clusters and gets 
-        #     # the key that belong to the cluster that has the minimum distance
-        #     best_centroid_key = min([(index, np.linalg.norm(x-c_i)) \
-        #                             for index, c_i in enumerate(cand_centroids)], key=lambda t:t[1])[0]
+        cand_centroids = candidate
+        clusters  = {}
+        for x in self.X_no_duplicates.values:
+            # Calculates the distances from point x to all other clusters and gets 
+            # the key that belong to the cluster that has the minimum distance
+            best_centroid_key = min([(index, np.linalg.norm(x-c_i)) \
+                                    for index, c_i in enumerate(cand_centroids)], key=lambda t:t[1])[0]
 
-        #     # If there is the key, append it, otherwise, create the new key
-        #     try:
-        #         clusters[best_centroid_key].append(x)
-        #     except KeyError:
-        #         clusters[best_centroid_key] = [x]
+            # If there is the key, append it, otherwise, create the new key
+            try:
+                clusters[best_centroid_key].append(x)
+            except KeyError:
+                clusters[best_centroid_key] = [x]
         
-        # means = []
-        # for index, centroid in enumerate(cand_centroids):
-        #     means.append(np.sum([np.linalg.norm(x - centroid) for x in clusters[index]]))
-        # return np.mean(means)
-        a = candidate
-        print('a', a)
-        b = a.reshape(a.shape[0], 1, a.shape[1])
-        return np.mean(np.sqrt(np.einsum('ijk, ijk->ij', a-b, a-b)))
+        means = []
+        for index, centroid in enumerate(cand_centroids):
+            means.append(np.sum([np.linalg.norm(x - centroid) for x in clusters[index]]))
+        return np.mean(means)
+        # a = candidate
+        # b = a.reshape(a.shape[0], 1, a.shape[1])
+        # return np.mean(np.sqrt(np.einsum('ijk, ijk->ij', a-b, a-b)))
 
     def _disturb(self, next_candidate):
-        #print('Disturb before {}'.format(next_candidate))
         for i, _ in enumerate(next_candidate):
             if (random.randint(0,100) < 30):
-                next_candidate[i] = self.X_no_duplicates.sample(n=1)
-        #print('Disturb after {}'.format(next_candidate))
+                next_candidate[i] = self.X_no_duplicates.sample(n=1).values[0]
         #input()
-        return next_candidate
+        return np.array(next_candidate)
 
     def _cooling_schedule(self, iteration, nIterations, tInit, tFinal):
         return (0.5 * (tInit - tFinal)) * (1 + math.cos( (iteration * math.pi) / nIterations)) + tFinal
@@ -77,46 +74,51 @@ class KMeans_SA(KMeans):
         """
         Initialize the centers based on Simulated Annealing algorithm
         """
-        nIterations = 10
-        init_temp = 5.0
+        nIterations = 50
+        init_temp = 100.0
         final_temp = 0.0
         temperature = init_temp
 
         # Get new random solution
         centroids = self.X_no_duplicates.sample(n=self.K).values
 
-        best_energy = self._energy(centroids)
-        best_centroids = copy.copy(centroids)
+        best_energy    = self._energy(centroids)
+        best_centroids = list(centroids)
 
         for i in range(0, nIterations):
-            print(i)
-            next_candidate = list(centroids)
-            next_candidate = self._disturb(next_candidate)
+            #print(i)
+            #next_candidate = list(centroids)
+            next_candidate = self.X_no_duplicates.sample(n=self.K).values
+            energy_next    = self._energy(next_candidate)
+            # energy_cand = self._energy(centroids)
 
-            energy_next = self._energy(next_candidate)
-            energy_cand = self._energy(centroids)
+            if (energy_next < best_energy):
+                #print(energy_next, best_energy)
+                centroids      = list(next_candidate)
+                best_energy    = energy_next
 
-            delta = energy_next - energy_cand
-            if (delta > 0):
-                centroids = next_candidate
-                if (energy_next < best_energy):
-                    best_centroids = copy.copy(centroids)
-                    best_energy = energy_next
-            else:
-                probability = math.exp( delta / temperature )
-                probability *= 100
-                r = random.randint(0, 1000)
-                if ( r < probability):
-                    centroids = next_candidate
+            # delta = energy_next - energy_cand
+            # print('Delta: ', delta)
+            # if (delta > 0):
+            #     centroids = next_candidate
+            #     if (energy_next < best_energy):
+            #         best_centroids = copy.copy(centroids)
+            #         best_energy = energy_next
+            # else:
+            #     probability = math.exp( delta / temperature )
+            #     print('Probability:', probability)
+            #     probability *= 1000
+            #     r = random.randint(0, 1000)
+            #     if ( r < probability):
+            #         centroids = next_candidate
             
-            temperature = self._cooling_schedule(i, nIterations, init_temp, final_temp)
-        self.centroids = best_centroids
+            # temperature = self._cooling_schedule(i, nIterations, init_temp, final_temp)
+        self.centroids = list(centroids)
 
     def plot_init_centers(self):
         """
         Plot the Initial centers
         """
-        print(self.centroids)
         X = self.X
         fig = plt.figure(figsize=(5,5))
         plt.style.use('ggplot')

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import time
 import argparse
 import os
+import datetime
 
 from algorithms.kmeans import KMeans
 from algorithms.kmeanspp import KPlusPlus
@@ -30,7 +31,8 @@ if __name__ == '__main__':
         method = {
             'K-Means'  : {'phi': [], 'fit_time': []},
             'K-Means++': {'phi': [], 'fit_time': []},
-            'GK-Means' : {'phi': [], 'fit_time': []}
+            'GK-Means' : {'phi': [], 'fit_time': []},
+            'IF K-Means':{'phi': [], 'fit_time': []}
         }
         fdataset = pd.read_csv(path_dataset, sep=",", header=None)
         _, dataset_name = os.path.split(path_dataset)
@@ -54,17 +56,6 @@ if __name__ == '__main__':
             y_train = train.label
             y_train = y_train.apply(str)
             X_train = train.drop("label", axis=1)
-
-            ### Simulated Annealing
-            print('\tK-Means Simulated Annealing')
-            start_time = time.clock()
-            kmeans_sa = KMeans_SA(args.k, X=X_train, Y=y_train.values, name=dataset_name)
-            kmeans_sa.init_centers()
-            kmeans_sa.plot_init_centers()
-            kmeans_sa.find_centers()
-            end_time = time.clock()
-            print('Took {} seconds'.format(end_time-start_time))
-            input()
 
             ### Random initialization
             print('\tK-Means Random Initialization')
@@ -104,6 +95,18 @@ if __name__ == '__main__':
             #accuracy['kmeans'].append(kmeans.get_error_count(X_test.values, y_test.values))
             method['GK-Means']['phi'].append(kmeansgraph.get_sum_distances())
             method['GK-Means']['fit_time'].append(end_time-start_time)
+
+            ### IFaber
+            print('\tK-Means IFABER')
+            start_time = time.clock()
+            kmeans_sa = KMeans_SA(args.k, X=X_train, Y=y_train.values, name=dataset_name)
+            kmeans_sa.init_centers()
+            #kmeans_sa.plot_init_centers()
+            kmeans_sa.find_centers()
+            end_time = time.clock()
+            
+            method['IF K-Means']['phi'].append(kmeans_sa.get_sum_distances())
+            method['IF K-Means']['fit_time'].append(end_time-start_time)
         
         print('K-Means')
         print('phi: {} +- {}'.format(np.mean(method['K-Means']['phi']), np.std(method['K-Means']['phi'])))
@@ -117,88 +120,29 @@ if __name__ == '__main__':
         print('phi: {} +- {}'.format(np.mean(method['GK-Means']['phi']), np.std(method['GK-Means']['phi'])))
         print('fit_time: {} +- {}'.format(np.mean(method['GK-Means']['fit_time']), np.std(method['GK-Means']['fit_time'])))
 
+        print('IF K-Means')
+        print('phi: {} +- {}'.format(np.mean(method['IF K-Means']['phi']), np.std(method['IF K-Means']['phi'])))
+        print('fit_time: {} +- {}'.format(np.mean(method['IF K-Means']['fit_time']), np.std(method['IF K-Means']['fit_time'])))
+
 
         #for key, value in method:
         plt.close('all')
         plt.style.use('ggplot')
-        f = plt.figure()
+        f = plt.figure(figsize=(9,8))
         ax_labels = list(method)
         plt.boxplot( [ method[x]['phi'] for x in ax_labels ] )
         plt.xticks(np.arange(len(ax_labels))+1, ax_labels, rotation= 45)
         plt.title('Phi\n{} - K = {}'.format(dataset_name, args.k))
-        plt.show()
+        
+        current_time = datetime.datetime.now().strftime('%Y-%m-%dT%H_%M_%S')
+        plt.savefig( os.path.join('experiments', 'runs', 'phi_' + current_time + '.png'),
+            dpi=200, bbox_inches='tight')
 
-        f = plt.figure()
+        f = plt.figure(figsize=(9,8))
         ax_labels = list(method)
         plt.boxplot( [ method[x]['fit_time'] for x in ax_labels ] )
         plt.xticks(np.arange(len(ax_labels))+1, ax_labels, rotation= 45)
         plt.title('Tempo de execução (segundos)\n{} - K = {}'.format(dataset_name, args.k))
-        plt.show()
-
-    # print('Teste tempo de execucao')
-    # dataset = pd.read_csv('datasets/norm-k15-d15-50k.txt', sep=",", header=None).rename(columns = {0:'label'})
-    # dataset = dataset.drop("label", axis=1)
-
-
-    # fit_times = {
-    #     'K-Means'  : {},
-    #     'K-Means++': {},
-    #     'GK-Means' : {}
-    # }
-
-    # x = []
-    # for nb_points in range(5000,35000,5000):
-    #     x.append(nb_points)
-    #     print(nb_points)
-    #     X = dataset.sample(n=nb_points)
-    #     y = [0] * nb_points
-
-    #     fit_times['K-Means'][nb_points] = []
-    #     fit_times['K-Means++'][nb_points] = []
-    #     fit_times['GK-Means'][nb_points] = []
-
-    #     for count in range(0, 2):
-    #         print('\t', count)
-    #         print('\tK-Means Random Initialization')
-    #         kmeans = KMeans(15, X=X.values, Y=y, name='NORM-10')
-    #         start_time = time.clock()
-    #         kmeans.find_centers()
-    #         end_time = time.clock()
-    #         fit_times['K-Means'][nb_points].append(end_time-start_time)
-
-    #         print('\tK-Means++')
-    #         kpp = KPlusPlus(15, X=X.values, Y=y, name='NORM-10')
-    #         kpp.init_centers()
-    #         start_time = time.clock()
-    #         kpp.find_centers(method='++')
-    #         end_time = time.clock()
-    #         fit_times['K-Means++'][nb_points].append(end_time-start_time)
-
-    #         print('\tK-Means Graph')
-    #         kmeansgraph = KMeansGraph(15, X=X, Y=y, name='NORM-10')
-    #         kmeansgraph.init_centers()
-    #         start_time = time.clock()
-    #         kmeansgraph.find_centers(method='graph')
-    #         end_time = time.clock()
-    #         fit_times['GK-Means'][nb_points].append(end_time-start_time)
-    
-    # plt.close('all')
-    # plt.style.use('ggplot')
-    # f = plt.figure()
-
-    # y = [ np.mean( fit_times['K-Means'][points] ) for points in fit_times['K-Means'] ]
-    # error = [ np.std( fit_times['K-Means'][points] ) for points in fit_times['K-Means'] ]
-    # plt.errorbar(x,y, yerr=error, fmt='ro-', label='K-Means'  )
-
-    # y = [ np.mean( fit_times['K-Means++'][points] ) for points in fit_times['K-Means++'] ]
-    # error = [ np.std( fit_times['K-Means++'][points] ) for points in fit_times['K-Means++'] ]
-    # plt.errorbar(x,y, yerr=error, fmt='bo-', label='K-Means++'  )
-
-    # y = [ np.mean( fit_times['GK-Means'][points] ) for points in fit_times['GK-Means'] ]
-    # error = [ np.std( fit_times['GK-Means'][points] ) for points in fit_times['GK-Means'] ]
-    # plt.errorbar(x,y, yerr=error, fmt='go-', label='GK-Means'  )
-
-    # plt.legend(loc = 'lower right')
-
-    # plt.title('Tempo de Execução com aumento de número de pontos')
-    # plt.show()
+        current_time = datetime.datetime.now().strftime('%Y-%m-%dT%H_%M_%S')
+        plt.savefig( os.path.join('experiments', 'runs', 'tempo_exec_' + current_time + '.png'),
+            dpi=200, bbox_inches='tight')

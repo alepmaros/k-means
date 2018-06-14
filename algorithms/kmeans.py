@@ -77,6 +77,8 @@ class KMeans():
             tit = 'K-Means++'
         elif self.method == 'graph':
             tit = 'K-Means com incialização por MST'
+        elif self.method == 'ifaber':
+            tit = 'K-Means com inicialização por IFaber'
         else:
             tit = 'K-Means com inicialização aleatoria'
         pars = 'N={}, K={}'.format(str(self.N), str(self.K))

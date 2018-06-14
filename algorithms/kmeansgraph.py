@@ -33,9 +33,7 @@ class KMeansGraph(KMeans):
         self.name = name
 
         self.X = X.values
-        self.X_no_duplicates = X.drop_duplicates().sample(frac=0.2).values
-
-        print(len(self.X_no_duplicates))
+        self.X_no_duplicates = X.drop_duplicates().sample(frac=0.05).values
 
         self.N = len(X)
         self.true_y = Y
