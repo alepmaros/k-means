@@ -74,7 +74,7 @@ class KMeans_SA(KMeans):
         """
         Initialize the centers based on Simulated Annealing algorithm
         """
-        nIterations = 50
+        nIterations = 20
         init_temp = 100.0
         final_temp = 0.0
         temperature = init_temp

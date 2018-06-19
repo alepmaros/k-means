@@ -128,21 +128,21 @@ if __name__ == '__main__':
         #for key, value in method:
         plt.close('all')
         plt.style.use('ggplot')
-        f = plt.figure(figsize=(9,8))
+        f = plt.figure(figsize=(7,6))
         ax_labels = list(method)
         plt.boxplot( [ method[x]['phi'] for x in ax_labels ] )
         plt.xticks(np.arange(len(ax_labels))+1, ax_labels, rotation= 45)
         plt.title('Phi\n{} - K = {}'.format(dataset_name, args.k))
         
         current_time = datetime.datetime.now().strftime('%Y-%m-%dT%H_%M_%S')
-        plt.savefig( os.path.join('experiments', 'runs', 'phi_' + current_time + '.png'),
+        plt.savefig( os.path.join('experiments', 'runs', 'phi_' + current_time + '.pdf'),
             dpi=200, bbox_inches='tight')
 
-        f = plt.figure(figsize=(9,8))
+        f = plt.figure(figsize=(7,6))
         ax_labels = list(method)
         plt.boxplot( [ method[x]['fit_time'] for x in ax_labels ] )
         plt.xticks(np.arange(len(ax_labels))+1, ax_labels, rotation= 45)
         plt.title('Tempo de execução (segundos)\n{} - K = {}'.format(dataset_name, args.k))
         current_time = datetime.datetime.now().strftime('%Y-%m-%dT%H_%M_%S')
-        plt.savefig( os.path.join('experiments', 'runs', 'tempo_exec_' + current_time + '.png'),
+        plt.savefig( os.path.join('experiments', 'runs', 'tempo_exec_' + current_time + '.pdf'),
             dpi=200, bbox_inches='tight')
