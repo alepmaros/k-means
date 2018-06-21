@@ -35,7 +35,7 @@ for nb_points in range(5000,51000,2500):
     fit_times['GK-Means'][nb_points] = []
     fit_times['IF K-Means'][nb_points] = []
 
-    for count in range(0, 1):
+    for count in range(0, 10):
         print('\t{}'.format(count))
         print('\tK-Means Random Initialization')
         start_time = time.clock()
