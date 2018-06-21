@@ -39,7 +39,8 @@ if __name__ == '__main__':
         # Remove the .txt
         dataset_name    = dataset_name[:-4]
 
-        if(dataset_name == 'kdd99.'):
+        if(dataset_name == 'KDD99.'):
+            dataset_name = 'KDD99'
             train = fdataset.sample(frac=0.1)
         else:
             train = fdataset

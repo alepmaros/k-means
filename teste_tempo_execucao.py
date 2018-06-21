@@ -24,7 +24,7 @@ fit_times = {
 }
 
 x = []
-for nb_points in range(5000,8000,1000):
+for nb_points in range(5000,51000,2500):
     x.append(nb_points)
     print(nb_points)
     X = dataset.sample(n=nb_points)
@@ -70,7 +70,7 @@ for nb_points in range(5000,8000,1000):
 
 plt.close('all')
 plt.style.use('ggplot')
-f = plt.figure(figsize=(9,8))
+f = plt.figure(figsize=(11,8))
 
 y = [ np.mean( fit_times['K-Means'][points] ) for points in fit_times['K-Means'] ]
 error = [ np.std( fit_times['K-Means'][points] ) for points in fit_times['K-Means'] ]
