@@ -149,7 +149,7 @@ class KMeans():
         if (method == 'random'):
             # Initialize to K random centers
             self.centroids = random.sample(list(X), K)
-        while not self._has_converged():
+        for _ in range(0, 20):
             self.old_centroids = self.centroids
             # Assign all points in X to clusters
             self._cluster_points()
