@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import time
 import argparse
@@ -24,7 +26,7 @@ fit_times = {
 }
 
 x = []
-for nb_points in range(5000,51000,2500):
+for nb_points in range(5000,46000,2500):
     x.append(nb_points)
     print(nb_points)
     X = dataset.sample(n=nb_points)
